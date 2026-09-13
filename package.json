@@ -1,0 +1,8 @@
+{
+  "name": "jarvis-v5",
+  "version": "5.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
