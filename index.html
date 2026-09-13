@@ -1,149 +1,2055 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>JARVIS V5 — Core Intelligence</title>
-<style>
-:root{--cyan:#00eaff;--cyan2:#63f7ff;--bg:#020609;--panel:rgba(3,14,18,.72);--line:rgba(0,234,255,.2);--muted:#78969b}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020609;color:#dffcff;font-family:Arial,Helvetica,sans-serif}
-body{background:radial-gradient(circle at 50% 48%,#062129 0,#02090c 28%,#020609 65%,#010304 100%)}
-#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
-header{position:fixed;top:0;left:0;right:0;height:58px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line);background:rgba(0,5,8,.5);backdrop-filter:blur(10px)}
-.brand{font-weight:800;letter-spacing:4px;font-size:14px}.state{font-size:10px;letter-spacing:2px;color:var(--cyan)}
-main{position:fixed;inset:58px 0 0;z-index:2;display:flex;flex-direction:column;align-items:center}
-#coreWrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);width:min(82vw,520px);height:min(82vw,520px);display:grid;place-items:center}
-.coreGlow{position:absolute;width:65%;height:65%;border-radius:50%;background:radial-gradient(circle,rgba(0,234,255,.2),rgba(0,234,255,.03) 45%,transparent 70%);filter:blur(20px);animation:pulse 2.5s infinite}
-@keyframes pulse{50%{transform:scale(1.12);opacity:.7}}
-.coreRing{position:absolute;width:70%;height:70%;border:1px solid rgba(0,234,255,.18);border-radius:50%;box-shadow:0 0 40px rgba(0,234,255,.08);animation:spin 18s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#brain{position:absolute;width:100%;height:100%}
-.status{position:absolute;top:24px;text-align:center;z-index:4;pointer-events:none}
-.status .title{font-size:11px;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 12px rgba(0,234,255,.6)}
-.status .sub{margin-top:7px;font-size:9px;color:#729095;letter-spacing:1.5px}
-.panel{position:fixed;z-index:10;left:12px;right:12px;bottom:12px;padding:10px;border:1px solid var(--line);border-radius:16px;background:rgba(1,8,11,.84);backdrop-filter:blur(14px)}
-.row{display:flex;gap:8px}.row input{flex:1;min-width:0;background:#061217;border:1px solid var(--line);color:white;border-radius:12px;padding:13px;outline:none}.row button{border:1px solid rgba(0,234,255,.4);background:#06232a;color:var(--cyan2);border-radius:12px;padding:0 15px;font-weight:700}
-.tools{display:flex;gap:7px;margin-top:8px;overflow:auto}.tools button{white-space:nowrap;border:1px solid rgba(0,234,255,.14);background:rgba(0,234,255,.04);color:#8cb5ba;border-radius:999px;padding:7px 10px;font-size:10px}
-#reply{position:fixed;z-index:9;left:12px;right:12px;top:82px;max-height:30vh;overflow:auto;display:none;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(1,9,12,.78);font-size:13px;line-height:1.55;white-space:pre-wrap}
-#memory{position:fixed;z-index:9;top:70px;right:12px;font-size:9px;color:#658186;letter-spacing:1px}
-#listen{position:fixed;z-index:12;top:70px;left:12px;border:1px solid var(--line);background:rgba(0,15,19,.7);color:var(--cyan);border-radius:999px;padding:7px 10px;font-size:9px;letter-spacing:1px}
-@media(min-width:800px){.panel{left:50%;right:auto;transform:translateX(-50%);width:min(720px,calc(100% - 30px))}#reply{left:50%;right:auto;transform:translateX(-50%);width:min(720px,calc(100% - 30px))}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>JARVIS V6</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #d9faff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      position: relative;
+    }
+
+    #background {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at center,
+          rgba(0, 190, 255, 0.10),
+          transparent 25%),
+        radial-gradient(circle at center,
+          rgba(0, 120, 255, 0.06),
+          transparent 55%),
+        #000;
+      z-index: 0;
+    }
+
+    #stars {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: .45;
+    }
+
+    #brainCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .top {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      z-index: 20;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,.88),
+        rgba(0,0,0,0)
+      );
+    }
+
+    .brand {
+      letter-spacing: 5px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #d9faff;
+    }
+
+    .status {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-align: right;
+      color: #73eaff;
+      text-shadow: 0 0 12px #00c8ff;
+    }
+
+    .main {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .core-area {
+      width: min(90vw, 520px);
+      height: min(70vw, 390px);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring {
+      position: absolute;
+      width: 245px;
+      height: 245px;
+      border: 1px solid rgba(0, 220, 255, .14);
+      border-radius: 50%;
+      box-shadow:
+        0 0 25px rgba(0, 200, 255, .05),
+        inset 0 0 25px rgba(0, 200, 255, .03);
+      animation: rotate 16s linear infinite;
+    }
+
+    .ring.two {
+      width: 290px;
+      height: 290px;
+      border-style: dashed;
+      opacity: .35;
+      animation-direction: reverse;
+      animation-duration: 24s;
+    }
+
+    .ring.three {
+      width: 335px;
+      height: 335px;
+      opacity: .15;
+      animation-duration: 32s;
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .core {
+      position: relative;
+      width: 125px;
+      height: 125px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle,
+          rgba(255,255,255,.95) 0%,
+          rgba(83,231,255,.8) 7%,
+          rgba(0,179,255,.18) 30%,
+          rgba(0,0,0,0) 70%);
+      box-shadow:
+        0 0 25px rgba(0,220,255,.55),
+        0 0 70px rgba(0,180,255,.22);
+      animation: breathe 3s ease-in-out infinite;
+    }
+
+    .core::before,
+    .core::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(100,240,255,.25);
+      border-radius: 50%;
+    }
+
+    .core::after {
+      inset: 28px;
+      border-color: rgba(100,240,255,.18);
+    }
+
+    @keyframes breathe {
+      0%, 100% {
+        transform: scale(.92);
+        opacity: .75;
+      }
+
+      50% {
+        transform: scale(1.08);
+        opacity: 1;
+      }
+    }
+
+    .state {
+      margin-top: 5px;
+      min-height: 25px;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-align: center;
+      color: #7cecff;
+      text-shadow: 0 0 15px #00c8ff;
+    }
+
+    .answer {
+      position: fixed;
+      left: 50%;
+      bottom: 145px;
+      transform: translateX(-50%);
+      width: min(88vw, 620px);
+      max-height: 125px;
+      overflow-y: auto;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #e8fbff;
+      padding: 0 12px;
+      text-shadow: 0 0 10px rgba(0,190,255,.35);
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    .panel {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      width: min(94vw, 650px);
+      padding: 10px;
+      border: 1px solid rgba(0,200,255,.14);
+      background: rgba(0,8,14,.78);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      z-index: 30;
+      pointer-events: auto;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 7px;
+    }
+
+    #commandInput {
+      flex: 1;
+      min-width: 0;
+      height: 42px;
+      padding: 0 12px;
+      border-radius: 9px;
+      border: 1px solid rgba(0,200,255,.2);
+      outline: none;
+      background: rgba(0,0,0,.6);
+      color: white;
+      font-size: 13px;
+    }
+
+    #commandInput::placeholder {
+      color: rgba(210,245,255,.4);
+    }
+
+    button {
+      border: 1px solid rgba(0,210,255,.25);
+      background: rgba(0,120,170,.12);
+      color: #aaf3ff;
+      border-radius: 9px;
+      padding: 0 13px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(.97);
+    }
+
+    .settings {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .settings label {
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: rgba(200,240,255,.55);
+      white-space: nowrap;
+    }
+
+    #voiceSelect {
+      flex: 1;
+      min-width: 0;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,200,255,.15);
+      background: #05090c;
+      color: #bcefff;
+      font-size: 10px;
+      outline: none;
+    }
+
+    .mic-indicator {
+      position: fixed;
+      top: 82px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #31505a;
+      box-shadow: 0 0 0 transparent;
+      transition: .3s;
+    }
+
+    .mic-indicator.on {
+      background: #55eaff;
+      box-shadow:
+        0 0 8px #00c8ff,
+        0 0 18px rgba(0,200,255,.8);
+      animation: micPulse 1.3s infinite;
+    }
+
+    @keyframes micPulse {
+      50% {
+        transform: translateX(-50%) scale(1.7);
+      }
+    }
+
+    .permission {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(88vw, 380px);
+      padding: 25px;
+      border: 1px solid rgba(0,210,255,.25);
+      background: rgba(0,8,12,.96);
+      border-radius: 15px;
+      text-align: center;
+      z-index: 100;
+      display: none;
+    }
+
+    .permission h2 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      letter-spacing: 3px;
+      font-weight: normal;
+    }
+
+    .permission p {
+      font-size: 12px;
+      color: rgba(220,245,255,.65);
+      line-height: 1.5;
+    }
+
+    .permission button {
+      height: 42px;
+      margin-top: 8px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (orientation: landscape) {
+      .core-area {
+        height: 58vh;
+      }
+
+      .answer {
+        bottom: 100px;
+      }
+
+      .panel {
+        bottom: 10px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<canvas id="bg"></canvas>
-<header><div class="brand">JARVIS</div><div class="state" id="conn">CORE ONLINE</div></header>
-<button id="listen">MIC: INICIANDO</button>
-<div id="memory">MEMÓRIA: 0</div>
-<main>
-  <div class="status"><div class="title" id="state">INICIALIZANDO</div><div class="sub" id="detail">NÚCLEO DE INTELIGÊNCIA</div></div>
-  <div id="coreWrap"><div class="coreGlow"></div><div class="coreRing"></div><canvas id="brain"></canvas></div>
-</main>
-<div id="reply"></div>
-<section class="panel">
-  <div class="row"><input id="input" placeholder="Fale com o JARVIS ou digite..." autocomplete="off"><button id="send">ENVIAR</button></div>
-  <div class="tools">
-    <button data-cmd="que horas são">HORA</button>
-    <button data-cmd="qual é a data de hoje">DATA</button>
-    <button data-cmd="status do sistema">STATUS</button>
-    <button data-cmd="abrir google">GOOGLE</button>
-    <button data-cmd="abrir youtube">YOUTUBE</button>
-    <button id="clearMem">LIMPAR MEMÓRIA</button>
+
+  <div id="background"></div>
+  <canvas id="stars"></canvas>
+  <canvas id="brainCanvas"></canvas>
+
+  <header class="top">
+    <div class="brand">JARVIS</div>
+
+    <div class="status" id="topStatus">
+      SISTEMA INICIALIZANDO
+    </div>
+  </header>
+
+  <div class="mic-indicator" id="micIndicator"></div>
+
+  <main class="main">
+
+    <div class="core-area">
+
+      <div class="ring"></div>
+      <div class="ring two"></div>
+      <div class="ring three"></div>
+
+      <div class="core" id="core"></div>
+
+    </div>
+
+    <div class="state" id="state">
+      INICIALIZANDO
+    </div>
+
+  </main>
+
+  <div class="answer" id="answer"></div>
+
+  <section class="panel">
+
+    <div class="input-row">
+
+      <input
+        id="commandInput"
+        type="text"
+        autocomplete="off"
+        placeholder="JARVIS, escreva um comando..."
+      >
+
+      <button id="sendButton">
+        ENVIAR
+      </button>
+
+    </div>
+
+    <div class="settings">
+
+      <label>VOZ:</label>
+
+      <select id="voiceSelect">
+        <option>Carregando vozes...</option>
+      </select>
+
+      <button id="restartMic">
+        🎙
+      </button>
+
+    </div>
+
+  </section>
+
+  <div class="permission" id="permission">
+
+    <h2>JARVIS</h2>
+
+    <p>
+      Para conversar por voz sem precisar apertar o microfone
+      a cada pergunta, permita o acesso ao microfone.
+    </p>
+
+    <button id="permissionButton">
+      ATIVAR MICROFONE
+    </button>
+
   </div>
-</section>
 
 <script>
-const $=s=>document.querySelector(s);
-const stateEl=$("#state"),detail=$("#detail"),reply=$("#reply"),input=$("#input"),memEl=$("#memory"),listenEl=$("#listen");
-let memory=JSON.parse(localStorage.getItem("jarvis_memory_v5")||"[]");
-function saveMemory(){localStorage.setItem("jarvis_memory_v5",JSON.stringify(memory));memEl.textContent="MEMÓRIA: "+memory.length}
-saveMemory();
+"use strict";
 
-function setState(a,b){stateEl.textContent=a;detail.textContent=b}
-function showReply(t){reply.textContent=t;reply.style.display="block"}
-function speak(t){
-  if(!("speechSynthesis" in window)) return;
-  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="pt-BR";u.rate=.98;u.pitch=.95;speechSynthesis.speak(u)}catch(e){}
-}
-async function ask(text){
-  text=(text||"").trim(); if(!text)return;
-  setState("ANALISANDO","PROCESSANDO SOLICITAÇÃO");
-  showReply("JARVIS está analisando...");
-  try{
-    const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text,memory})});
-    const data=await r.json();
-    if(!r.ok) throw new Error(data.error||"Falha no núcleo");
-    const answer=data.answer||"Não consegui produzir uma resposta.";
-    showReply(answer);setState("RESPONDENDO","RESPOSTA GERADA PELO NÚCLEO");
-    speak(answer.replace(/\n/g," "));
-    if(data.memoryToSave){
-      memory.push({text:data.memoryToSave,at:new Date().toISOString(),source:"usuario"});
-      saveMemory();
+/* =========================================================
+   JARVIS V6
+   ========================================================= */
+
+const API_URL = "/api/chat";
+
+const stateEl = document.getElementById("state");
+const topStatusEl = document.getElementById("topStatus");
+const answerEl = document.getElementById("answer");
+const commandInput = document.getElementById("commandInput");
+const sendButton = document.getElementById("sendButton");
+const voiceSelect = document.getElementById("voiceSelect");
+const micIndicator = document.getElementById("micIndicator");
+const permissionBox = document.getElementById("permission");
+const permissionButton = document.getElementById("permissionButton");
+const restartMicButton = document.getElementById("restartMic");
+const core = document.getElementById("core");
+
+/* =========================================================
+   MEMÓRIA
+   ========================================================= */
+
+let memory = [];
+
+try {
+  const saved = localStorage.getItem("jarvis_memory");
+
+  if (saved) {
+    const parsed = JSON.parse(saved);
+
+    if (Array.isArray(parsed)) {
+      memory = parsed;
     }
-    setTimeout(()=>setState("AGUARDANDO","JARVIS PRONTO"),900);
-  }catch(e){
-    const msg="Não consegui acessar o cérebro remoto. Verifique a API e o servidor. "+e.message;
-    showReply(msg);setState("OFFLINE","NÚCLEO REMOTO INDISPONÍVEL");
-    speak("Não consegui acessar o cérebro remoto.");
+  }
+} catch (error) {
+  console.warn("Não foi possível carregar memória.", error);
+}
+
+function saveMemory() {
+  try {
+    localStorage.setItem(
+      "jarvis_memory",
+      JSON.stringify(memory.slice(-100))
+    );
+  } catch (error) {
+    console.warn("Não foi possível salvar memória.", error);
   }
 }
-$("#send").onclick=()=>ask(input.value);
-input.onkeydown=e=>{if(e.key==="Enter")ask(input.value)};
-document.querySelectorAll("[data-cmd]").forEach(b=>b.onclick=()=>ask(b.dataset.cmd));
-$("#clearMem").onclick=()=>{memory=[];saveMemory();showReply("Memória local apagada.");speak("Memória local apagada.")};
 
-function openCommand(t){
- t=t.toLowerCase();
- if(t.includes("abrir google")){location.href="https://www.google.com";return true}
- if(t.includes("abrir youtube")){location.href="https://www.youtube.com";return true}
- if(t.includes("abrir whatsapp")){location.href="https://web.whatsapp.com";return true}
- return false;
+function addMemory(text) {
+
+  if (!text) return;
+
+  memory.push(String(text).trim());
+
+  memory = memory.slice(-100);
+
+  saveMemory();
 }
 
-let recognition=null,listening=false;
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-function startVoice(){
- if(!SR){listenEl.textContent="MIC: NÃO SUPORTADO";return}
- if(listening)return;
- recognition=new SR();recognition.lang="pt-BR";recognition.continuous=false;recognition.interimResults=false;
- recognition.onstart=()=>{listening=true;listenEl.textContent="MIC: OUVINDO";setState("OUVINDO","FALE COM JARVIS")};
- recognition.onresult=e=>{
-   const text=e.results[0][0].transcript.trim();
-   listening=false;
-   if(openCommand(text))return;
-   ask(text);
- };
- recognition.onerror=()=>{listening=false;listenEl.textContent="MIC: AGUARDANDO";setState("AGUARDANDO","DIGA SEU COMANDO")};
- recognition.onend=()=>{listening=false;listenEl.textContent="MIC: PRONTO"};
- try{recognition.start()}catch(e){}
-}
-listenEl.onclick=startVoice;
-setTimeout(startVoice,900);
+/* =========================================================
+   ESTADO
+   ========================================================= */
 
-const bg=$("#bg"),bc=bg.getContext("2d"),brain=$("#brain"),ctx=brain.getContext("2d");
-let W,H,pts=[];
-function resize(){
- W=bg.width=innerWidth*devicePixelRatio;H=bg.height=innerHeight*devicePixelRatio;bg.style.width=innerWidth+"px";bg.style.height=innerHeight+"px";
- brain.width=brain.clientWidth*devicePixelRatio;brain.height=brain.clientHeight*devicePixelRatio;
- pts=Array.from({length:70},()=>({x:Math.random(),y:Math.random(),s:Math.random()*1.6+.2,v:(Math.random()-.5)*.0004}));
+let currentState = "INIT";
+
+function setState(name, statusText) {
+
+  currentState = name;
+
+  stateEl.textContent = statusText || name;
+  topStatusEl.textContent = statusText || name;
+
+  core.classList.remove(
+    "listening",
+    "thinking",
+    "speaking"
+  );
+
+  if (name === "LISTENING") {
+    core.style.animationDuration = "1.2s";
+  }
+
+  if (name === "THINKING") {
+    core.style.animationDuration = ".7s";
+  }
+
+  if (name === "SPEAKING") {
+    core.style.animationDuration = ".4s";
+  }
+
+  if (name === "IDLE") {
+    core.style.animationDuration = "3s";
+  }
 }
-addEventListener("resize",resize);resize();
-function draw(){
- bc.clearRect(0,0,W,H);bc.fillStyle="rgba(0,234,255,.5)";
- for(const p of pts){p.y+=p.v;if(p.y<0||p.y>1)p.v*=-1;bc.beginPath();bc.arc(p.x*W,p.y*H,p.s*devicePixelRatio,0,Math.PI*2);bc.fill()}
- const w=brain.width,h=brain.height;ctx.clearRect(0,0,w,h);
- const t=Date.now()/1000;
- for(let i=0;i<260;i++){
-   const a=i/260*Math.PI*2; const rr=(.18+.16*Math.sin(i*2.7)+.05*Math.sin(t*1.4+i)) ;
-   const x=w/2+Math.cos(a)*(w*.31+Math.sin(i*4.1+t)*w*.05)+Math.sin(a*3+t)*w*.06;
-   const y=h/2+Math.sin(a)*(h*.31+Math.cos(i*3.2-t)*h*.05)+Math.cos(a*2-t)*h*.08;
-   const z=(Math.sin(i*7+t*2)+1)/2; const r=(.7+z*1.7)*devicePixelRatio;
-   ctx.fillStyle="rgba(0,234,255,"+(0.18+z*.65)+")";ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
- }
- requestAnimationFrame(draw);
+
+/* =========================================================
+   VOZ
+   ========================================================= */
+
+let voices = [];
+let selectedVoice = null;
+
+function loadVoices() {
+
+  voices = speechSynthesis
+    .getVoices()
+    .filter(v => v && v.name);
+
+  if (!voices.length) {
+    voiceSelect.innerHTML =
+      "<option>Vozes não disponíveis ainda...</option>";
+
+    return;
+  }
+
+  voiceSelect.innerHTML = "";
+
+  const preferred = findPreferredMaleVoice();
+
+  voices.forEach((voice, index) => {
+
+    const option = document.createElement("option");
+
+    option.value = String(index);
+
+    let label = voice.name;
+
+    if (voice.lang) {
+      label += " — " + voice.lang;
+    }
+
+    if (voice === preferred) {
+      label += " ★";
+    }
+
+    option.textContent = label;
+
+    voiceSelect.appendChild(option);
+  });
+
+  const savedVoiceName =
+    localStorage.getItem("jarvis_voice");
+
+  let savedIndex = voices.findIndex(
+    v => v.name === savedVoiceName
+  );
+
+  if (savedIndex < 0 && preferred) {
+    savedIndex = voices.indexOf(preferred);
+  }
+
+  if (savedIndex >= 0) {
+    voiceSelect.value = String(savedIndex);
+    selectedVoice = voices[savedIndex];
+  } else {
+    selectedVoice = voices[0];
+  }
 }
-draw();
-setState("AGUARDANDO","NÚCLEO DE INTELIGÊNCIA PRONTO");
+
+function findPreferredMaleVoice() {
+
+  /*
+    O navegador não informa de forma confiável
+    se uma voz é masculina ou feminina.
+
+    Por isso usamos nomes que normalmente
+    correspondem a vozes masculinas.
+  */
+
+  const maleKeywords = [
+    "male",
+    "mascul",
+    "homem",
+    "daniel",
+    "alex",
+    "fred",
+    "jorge",
+    "lucas",
+    "ricardo",
+    "felipe",
+    "carlos",
+    "rafael",
+    "miguel",
+    "bruno",
+    "guilherme",
+    "thomas",
+    "david",
+    "google uk english male",
+    "google us english male"
+  ];
+
+  const ptVoices = voices.filter(v =>
+    /^pt(-|_)/i.test(v.lang)
+  );
+
+  for (const keyword of maleKeywords) {
+
+    const match = ptVoices.find(v =>
+      v.name.toLowerCase().includes(keyword)
+    );
+
+    if (match) return match;
+  }
+
+  for (const keyword of maleKeywords) {
+
+    const match = voices.find(v =>
+      v.name.toLowerCase().includes(keyword)
+    );
+
+    if (match) return match;
+  }
+
+  /*
+    Se não existir uma voz masculina detectável,
+    priorizamos português.
+  */
+
+  if (ptVoices.length) {
+    return ptVoices[0];
+  }
+
+  return voices[0] || null;
+}
+
+if ("speechSynthesis" in window) {
+
+  speechSynthesis.onvoiceschanged = loadVoices;
+
+  loadVoices();
+
+  setTimeout(loadVoices, 500);
+  setTimeout(loadVoices, 1500);
+}
+
+voiceSelect.addEventListener("change", () => {
+
+  const index = Number(voiceSelect.value);
+
+  if (!Number.isNaN(index) && voices[index]) {
+
+    selectedVoice = voices[index];
+
+    localStorage.setItem(
+      "jarvis_voice",
+      selectedVoice.name
+    );
+  }
+});
+
+/* =========================================================
+   FALAR
+   ========================================================= */
+
+let speaking = false;
+
+function speak(text) {
+
+  return new Promise(resolve => {
+
+    if (!text) {
+      resolve();
+      return;
+    }
+
+    if (!("speechSynthesis" in window)) {
+      resolve();
+      return;
+    }
+
+    speaking = true;
+
+    stopRecognition();
+
+    setState("SPEAKING", "JARVIS RESPONDENDO");
+
+    speechSynthesis.cancel();
+
+    const utterance =
+      new SpeechSynthesisUtterance(text);
+
+    utterance.lang =
+      selectedVoice?.lang || "pt-BR";
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    /*
+      Configuração de voz mais séria.
+      Pode ser ajustada pelo usuário.
+    */
+
+    utterance.rate = 0.93;
+    utterance.pitch = 0.72;
+    utterance.volume = 1;
+
+    utterance.onend = () => {
+
+      speaking = false;
+
+      setState(
+        "IDLE",
+        "JARVIS AGUARDANDO"
+      );
+
+      setTimeout(() => {
+        startRecognition();
+      }, 350);
+
+      resolve();
+    };
+
+    utterance.onerror = () => {
+
+      speaking = false;
+
+      setState(
+        "IDLE",
+        "JARVIS AGUARDANDO"
+      );
+
+      setTimeout(() => {
+        startRecognition();
+      }, 350);
+
+      resolve();
+    };
+
+    speechSynthesis.speak(utterance);
+  });
+}
+
+/* =========================================================
+   RECONHECIMENTO DE VOZ
+   ========================================================= */
+
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+let recognition = null;
+
+let recognitionRunning = false;
+let shouldKeepListening = true;
+let restartTimer = null;
+
+let processingVoice = false;
+
+if (SpeechRecognition) {
+
+  recognition = new SpeechRecognition();
+
+  recognition.lang = "pt-BR";
+
+  recognition.continuous = true;
+
+  recognition.interimResults = true;
+
+  recognition.maxAlternatives = 3;
+
+  recognition.onstart = () => {
+
+    recognitionRunning = true;
+
+    micIndicator.classList.add("on");
+
+    if (!speaking && !processingVoice) {
+
+      setState(
+        "LISTENING",
+        "MICROFONE OUVINDO"
+      );
+    }
+  };
+
+  recognition.onresult = event => {
+
+    let finalText = "";
+
+    for (
+      let i = event.resultIndex;
+      i < event.results.length;
+      i++
+    ) {
+
+      const result = event.results[i];
+
+      const transcript =
+        result[0]?.transcript || "";
+
+      if (result.isFinal) {
+        finalText += transcript + " ";
+      }
+    }
+
+    finalText = finalText.trim();
+
+    if (!finalText) return;
+
+    handleVoiceTranscript(finalText);
+  };
+
+  recognition.onerror = event => {
+
+    console.warn(
+      "Reconhecimento:",
+      event.error
+    );
+
+    recognitionRunning = false;
+
+    micIndicator.classList.remove("on");
+
+    /*
+      Alguns erros não precisam de tentativa
+      imediata de reinício.
+    */
+
+    if (
+      event.error === "not-allowed" ||
+      event.error === "service-not-allowed"
+    ) {
+
+      shouldKeepListening = false;
+
+      permissionBox.style.display = "block";
+
+      setState(
+        "ERROR",
+        "MICROFONE BLOQUEADO"
+      );
+
+      return;
+    }
+
+    scheduleRecognitionRestart();
+  };
+
+  recognition.onend = () => {
+
+    recognitionRunning = false;
+
+    micIndicator.classList.remove("on");
+
+    /*
+      O navegador pode encerrar recognition sozinho.
+      Reiniciamos automaticamente.
+    */
+
+    if (
+      shouldKeepListening &&
+      !speaking &&
+      !processingVoice
+    ) {
+      scheduleRecognitionRestart();
+    }
+  };
+
+} else {
+
+  setState(
+    "ERROR",
+    "NAVEGADOR SEM RECONHECIMENTO DE VOZ"
+  );
+}
+
+/* =========================================================
+   INICIAR MICROFONE
+   ========================================================= */
+
+function startRecognition() {
+
+  if (!recognition) return;
+
+  if (!shouldKeepListening) return;
+
+  if (speaking) return;
+
+  if (processingVoice) return;
+
+  if (recognitionRunning) return;
+
+  try {
+
+    recognition.lang = "pt-BR";
+
+    recognition.continuous = true;
+
+    recognition.interimResults = true;
+
+    recognition.start();
+
+  } catch (error) {
+
+    console.warn(
+      "Não foi possível iniciar microfone:",
+      error
+    );
+
+    scheduleRecognitionRestart();
+  }
+}
+
+/* =========================================================
+   PARAR MICROFONE
+   ========================================================= */
+
+function stopRecognition() {
+
+  if (!recognition) return;
+
+  clearTimeout(restartTimer);
+
+  try {
+    recognition.stop();
+  } catch (error) {}
+
+  recognitionRunning = false;
+
+  micIndicator.classList.remove("on");
+}
+
+/* =========================================================
+   REINICIAR AUTOMATICAMENTE
+   ========================================================= */
+
+function scheduleRecognitionRestart() {
+
+  if (!shouldKeepListening) return;
+
+  if (speaking) return;
+
+  if (processingVoice) return;
+
+  clearTimeout(restartTimer);
+
+  restartTimer = setTimeout(() => {
+
+    startRecognition();
+
+  }, 900);
+}
+
+/* =========================================================
+   WAKE WORD
+   ========================================================= */
+
+function normalizeText(text) {
+
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function containsJarvis(text) {
+
+  const normalized = normalizeText(text);
+
+  return (
+    normalized.includes("jarvis") ||
+    normalized.includes("jarvis")
+  );
+}
+
+function removeWakeWord(text) {
+
+  return text
+    .replace(/jarvis/ig, "")
+    .replace(/[,;:!?]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/* =========================================================
+   RECEBER FALA
+   ========================================================= */
+
+async function handleVoiceTranscript(transcript) {
+
+  console.log(
+    "Voz recebida:",
+    transcript
+  );
+
+  /*
+    Só executa quando ouvir JARVIS.
+  */
+
+  if (!containsJarvis(transcript)) {
+    return;
+  }
+
+  const command =
+    removeWakeWord(transcript);
+
+  /*
+    Se a pessoa falou somente "JARVIS",
+    aguardamos mais uma frase.
+  */
+
+  if (!command) {
+
+    setState(
+      "LISTENING",
+      "JARVIS OUVINDO"
+    );
+
+    await speakShortTone();
+
+    return;
+  }
+
+  if (processingVoice) return;
+
+  await processCommand(
+    command,
+    true
+  );
+}
+
+/* =========================================================
+   COMANDO
+   ========================================================= */
+
+async function processCommand(
+  message,
+  fromVoice = false
+) {
+
+  message = String(message || "").trim();
+
+  if (!message) return;
+
+  if (processingVoice) return;
+
+  processingVoice = true;
+
+  if (fromVoice) {
+    stopRecognition();
+  }
+
+  setState(
+    "THINKING",
+    "JARVIS ANALISANDO"
+  );
+
+  answerEl.textContent = "";
+
+  try {
+
+    const localResponse =
+      handleLocalCommand(message);
+
+    if (localResponse) {
+
+      answerEl.textContent =
+        localResponse;
+
+      await speak(localResponse);
+
+      processingVoice = false;
+
+      if (!speaking) {
+        startRecognition();
+      }
+
+      return;
+    }
+
+    const response =
+      await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message,
+          memory
+        })
+      });
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+
+      throw new Error(
+        data?.error ||
+        "Erro na API do JARVIS."
+      );
+    }
+
+    let answer =
+      String(
+        data?.answer ||
+        "Não consegui obter uma resposta."
+      ).trim();
+
+    /*
+      Se o backend mandar uma memória,
+      armazenamos localmente.
+    */
+
+    if (data?.memoryToSave) {
+
+      addMemory(
+        String(data.memoryToSave)
+      );
+    }
+
+    answerEl.textContent = answer;
+
+    /*
+      Guardamos pergunta e resposta resumidas
+      como contexto local.
+    */
+
+    addMemory(
+      "Usuário: " + message
+    );
+
+    addMemory(
+      "JARVIS: " + answer
+    );
+
+    await speak(answer);
+
+  } catch (error) {
+
+    console.error(error);
+
+    const errorMessage =
+      "Desculpe. Houve um problema ao acessar meu núcleo de inteligência.";
+
+    answerEl.textContent =
+      errorMessage;
+
+    await speak(errorMessage);
+  }
+
+  processingVoice = false;
+
+  if (!speaking) {
+    startRecognition();
+  }
+}
+
+/* =========================================================
+   COMANDOS LOCAIS
+   ========================================================= */
+
+function handleLocalCommand(message) {
+
+  const text =
+    normalizeText(message);
+
+  if (
+    text.includes("que horas") ||
+    text === "hora" ||
+    text.includes("horas sao")
+  ) {
+
+    return (
+      "Agora são " +
+      new Date().toLocaleTimeString(
+        "pt-BR",
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      ) +
+      "."
+    );
+  }
+
+  if (
+    text.includes("qual a data") ||
+    text.includes("que dia") ||
+    text.includes("data de hoje")
+  ) {
+
+    return (
+      "Hoje é " +
+      new Date().toLocaleDateString(
+        "pt-BR",
+        {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        }
+      ) +
+      "."
+    );
+  }
+
+  if (
+    text.includes("status do sistema") ||
+    text === "status"
+  ) {
+
+    return getSystemStatus();
+  }
+
+  if (
+    text.includes("abrir google")
+  ) {
+
+    window.open(
+      "https://www.google.com",
+      "_blank"
+    );
+
+    return "Abrindo o Google.";
+  }
+
+  if (
+    text.includes("abrir youtube")
+  ) {
+
+    window.open(
+      "https://www.youtube.com",
+      "_blank"
+    );
+
+    return "Abrindo o YouTube.";
+  }
+
+  if (
+    text.includes("limpar memoria")
+  ) {
+
+    memory = [];
+
+    saveMemory();
+
+    return "Minha memória local foi limpa.";
+  }
+
+  if (
+    text.startsWith("memorize que")
+  ) {
+
+    const value =
+      message.substring(
+        message.toLowerCase().indexOf("memorize que") +
+        "memorize que".length
+      ).trim();
+
+    if (value) {
+
+      addMemory(value);
+
+      return "Informação armazenada na minha memória.";
+    }
+  }
+
+  if (
+    text.startsWith("aprenda que")
+  ) {
+
+    const value =
+      message.substring(
+        message.toLowerCase().indexOf("aprenda que") +
+        "aprenda que".length
+      ).trim();
+
+    if (value) {
+
+      addMemory(value);
+
+      return "Informação adicionada à minha memória.";
+    }
+  }
+
+  return null;
+}
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+function getSystemStatus() {
+
+  const online =
+    navigator.onLine;
+
+  const battery =
+    "getBattery" in navigator;
+
+  return (
+    "Sistema operacional. " +
+    "Conexão: " +
+    (online ? "online" : "offline") +
+    ". " +
+    "Reconhecimento de voz: " +
+    (recognition ? "disponível" : "indisponível") +
+    ". " +
+    "Síntese de voz: " +
+    ("speechSynthesis" in window
+      ? "disponível"
+      : "indisponível") +
+    ". " +
+    "Memória local: " +
+    memory.length +
+    " registros." +
+    (battery
+      ? " Monitoramento de bateria disponível."
+      : "")
+  );
+}
+
+/* =========================================================
+   PEQUENO SOM JARVIS
+   ========================================================= */
+
+function speakShortTone() {
+
+  return new Promise(resolve => {
+
+    /*
+      Pequeno som eletrônico usando Web Audio.
+      Não depende de arquivo externo.
+    */
+
+    try {
+
+      const AudioContext =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if (!AudioContext) {
+        resolve();
+        return;
+      }
+
+      const ctx =
+        new AudioContext();
+
+      const oscillator =
+        ctx.createOscillator();
+
+      const gain =
+        ctx.createGain();
+
+      oscillator.type = "sine";
+
+      oscillator.frequency.setValueAtTime(
+        720,
+        ctx.currentTime
+      );
+
+      oscillator.frequency.exponentialRampToValueAtTime(
+        980,
+        ctx.currentTime + .10
+      );
+
+      gain.gain.setValueAtTime(
+        .0001,
+        ctx.currentTime
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .06,
+        ctx.currentTime + .02
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .0001,
+        ctx.currentTime + .16
+      );
+
+      oscillator.connect(gain);
+
+      gain.connect(ctx.destination);
+
+      oscillator.start();
+
+      oscillator.stop(
+        ctx.currentTime + .17
+      );
+
+      setTimeout(() => {
+
+        ctx.close();
+
+        resolve();
+
+      }, 190);
+
+    } catch (error) {
+      resolve();
+    }
+  });
+}
+
+/* =========================================================
+   BOTÃO ENVIAR
+   ========================================================= */
+
+sendButton.addEventListener(
+  "click",
+  async () => {
+
+    const message =
+      commandInput.value.trim();
+
+    if (!message) return;
+
+    commandInput.value = "";
+
+    await processCommand(
+      message,
+      false
+    );
+  }
+);
+
+/* =========================================================
+   ENTER
+   ========================================================= */
+
+commandInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      sendButton.click();
+    }
+  }
+);
+
+/* =========================================================
+   BOTÃO DE RECUPERAÇÃO DO MICROFONE
+   ========================================================= */
+
+restartMicButton.addEventListener(
+  "click",
+  async () => {
+
+    shouldKeepListening = true;
+
+    permissionBox.style.display = "none";
+
+    stopRecognition();
+
+    await new Promise(
+      resolve => setTimeout(resolve, 300)
+    );
+
+    startRecognition();
+  }
+);
+
+/* =========================================================
+   PERMISSÃO
+   ========================================================= */
+
+permissionButton.addEventListener(
+  "click",
+  async () => {
+
+    permissionBox.style.display = "none";
+
+    shouldKeepListening = true;
+
+    startRecognition();
+  }
+);
+
+/* =========================================================
+   VISIBILIDADE
+   ========================================================= */
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    /*
+      Quando o usuário volta para a página,
+      tentamos recuperar o microfone.
+    */
+
+    if (
+      !document.hidden &&
+      !speaking &&
+      !processingVoice
+    ) {
+
+      setTimeout(() => {
+        startRecognition();
+      }, 500);
+    }
+  }
+);
+
+/* =========================================================
+   INTERNET
+   ========================================================= */
+
+window.addEventListener(
+  "online",
+  () => {
+
+    if (
+      currentState === "ERROR"
+    ) {
+
+      setState(
+        "IDLE",
+        "JARVIS ONLINE"
+      );
+    }
+  }
+);
+
+window.addEventListener(
+  "offline",
+  () => {
+
+    setState(
+      "ERROR",
+      "CONEXÃO OFFLINE"
+    );
+  }
+);
+
+/* =========================================================
+   ESTRELAS
+   ========================================================= */
+
+const starsCanvas =
+  document.getElementById("stars");
+
+const starsCtx =
+  starsCanvas.getContext("2d");
+
+let stars = [];
+
+function resizeStars() {
+
+  starsCanvas.width =
+    window.innerWidth;
+
+  starsCanvas.height =
+    window.innerHeight;
+
+  stars = [];
+
+  const amount =
+    Math.min(
+      160,
+      Math.floor(
+        window.innerWidth *
+        window.innerHeight /
+        8000
+      )
+    );
+
+  for (
+    let i = 0;
+    i < amount;
+    i++
+  ) {
+
+    stars.push({
+      x: Math.random() *
+        starsCanvas.width,
+
+      y: Math.random() *
+        starsCanvas.height,
+
+      r: Math.random() * 1.2,
+
+      a: Math.random(),
+
+      speed:
+        .001 +
+        Math.random() * .004
+    });
+  }
+}
+
+function drawStars() {
+
+  starsCtx.clearRect(
+    0,
+    0,
+    starsCanvas.width,
+    starsCanvas.height
+  );
+
+  for (const star of stars) {
+
+    star.a += star.speed;
+
+    if (star.a > 1) {
+      star.a = 0;
+    }
+
+    starsCtx.globalAlpha =
+      Math.abs(
+        Math.sin(star.a * Math.PI)
+      ) * .7;
+
+    starsCtx.beginPath();
+
+    starsCtx.arc(
+      star.x,
+      star.y,
+      star.r,
+      0,
+      Math.PI * 2
+    );
+
+    starsCtx.fillStyle =
+      "rgba(100,220,255,1)";
+
+    starsCtx.fill();
+  }
+
+  requestAnimationFrame(drawStars);
+}
+
+resizeStars();
+drawStars();
+
+window.addEventListener(
+  "resize",
+  resizeStars
+);
+
+/* =========================================================
+   CÉREBRO / PARTÍCULAS
+   ========================================================= */
+
+const brainCanvas =
+  document.getElementById("brainCanvas");
+
+const brainCtx =
+  brainCanvas.getContext("2d");
+
+let particles = [];
+
+function resizeBrain() {
+
+  const dpr =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+  brainCanvas.width =
+    window.innerWidth * dpr;
+
+  brainCanvas.height =
+    window.innerHeight * dpr;
+
+  brainCanvas.style.width =
+    window.innerWidth + "px";
+
+  brainCanvas.style.height =
+    window.innerHeight + "px";
+
+  brainCtx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
+
+  createParticles();
+}
+
+function createParticles() {
+
+  particles = [];
+
+  const count =
+    Math.min(
+      430,
+      Math.max(
+        190,
+        Math.floor(
+          window.innerWidth *
+          window.innerHeight /
+          3500
+        )
+      )
+    );
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    const angle =
+      Math.random() *
+      Math.PI *
+      2;
+
+    const radius =
+      Math.sqrt(
+        Math.random()
+      );
+
+    const width =
+      Math.min(
+        window.innerWidth * .24,
+        150
+      );
+
+    const height =
+      Math.min(
+        window.innerWidth * .20,
+        125
+      );
+
+    /*
+      Forma aproximada de cérebro/névoa.
+    */
+
+    particles.push({
+
+      x:
+        Math.cos(angle) *
+        radius *
+        width,
+
+      y:
+        Math.sin(angle) *
+        radius *
+        height,
+
+      z:
+        Math.random(),
+
+      size:
+        .35 +
+        Math.random() *
+        1.5,
+
+      speed:
+        .001 +
+        Math.random() *
+        .006,
+
+      phase:
+        Math.random() *
+        Math.PI *
+        2
+    });
+  }
+}
+
+function drawBrain(time) {
+
+  brainCtx.clearRect(
+    0,
+    0,
+    window.innerWidth,
+    window.innerHeight
+  );
+
+  const cx =
+    window.innerWidth / 2;
+
+  const cy =
+    window.innerHeight * .46;
+
+  const pulse =
+    1 +
+    Math.sin(time * .0015) *
+    .025;
+
+  for (const p of particles) {
+
+    p.phase += p.speed;
+
+    const wobble =
+      Math.sin(
+        time * .001 +
+        p.phase
+      ) * 1.8;
+
+    const x =
+      cx +
+      (p.x * pulse) +
+      wobble;
+
+    const y =
+      cy +
+      (p.y * pulse);
+
+    const alpha =
+      .12 +
+      p.z * .75;
+
+    brainCtx.globalAlpha =
+      alpha;
+
+    brainCtx.beginPath();
+
+    brainCtx.arc(
+      x,
+      y,
+      p.size,
+      0,
+      Math.PI * 2
+    );
+
+    brainCtx.fillStyle =
+      "rgba(70,220,255,1)";
+
+    brainCtx.fill();
+  }
+
+  /*
+    Linhas entre algumas partículas
+    para criar sensação de rede neural.
+  */
+
+  brainCtx.globalAlpha = .08;
+
+  for (
+    let i = 0;
+    i < particles.length;
+    i += 8
+  ) {
+
+    const a = particles[i];
+
+    const ax =
+      cx + a.x;
+
+    const ay =
+      cy + a.y;
+
+    for (
+      let j = i + 1;
+      j < Math.min(
+        i + 20,
+        particles.length
+      );
+      j += 5
+    ) {
+
+      const b = particles[j];
+
+      const bx =
+        cx + b.x;
+
+      const by =
+        cy + b.y;
+
+      const dx =
+        ax - bx;
+
+      const dy =
+        ay - by;
+
+      const distance =
+        Math.sqrt(
+          dx * dx +
+          dy * dy
+        );
+
+      if (distance < 48) {
+
+        brainCtx.beginPath();
+
+        brainCtx.moveTo(
+          ax,
+          ay
+        );
+
+        brainCtx.lineTo(
+          bx,
+          by
+        );
+
+        brainCtx.strokeStyle =
+          "rgba(50,210,255,.7)";
+
+        brainCtx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(
+    drawBrain
+  );
+}
+
+resizeBrain();
+
+drawBrain(0);
+
+window.addEventListener(
+  "resize",
+  resizeBrain
+);
+
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
+
+async function initializeJarvis() {
+
+  setState(
+    "INIT",
+    "JARVIS INICIALIZANDO"
+  );
+
+  await new Promise(
+    resolve => setTimeout(
+      resolve,
+      800
+    )
+  );
+
+  loadVoices();
+
+  if (!SpeechRecognition) {
+
+    setState(
+      "ERROR",
+      "VOZ NÃO SUPORTADA"
+    );
+
+    return;
+  }
+
+  setState(
+    "IDLE",
+    "JARVIS AGUARDANDO"
+  );
+
+  /*
+    Tentamos iniciar automaticamente.
+    Alguns navegadores permitem.
+    Outros exigem uma interação inicial.
+  */
+
+  setTimeout(() => {
+
+    startRecognition();
+
+    /*
+      Se não conseguiu iniciar,
+      mostramos a opção de permissão.
+    */
+
+    setTimeout(() => {
+
+      if (
+        !recognitionRunning &&
+        !speaking &&
+        shouldKeepListening
+      ) {
+
+        permissionBox.style.display =
+          "block";
+      }
+
+    }, 1800);
+
+  }, 500);
+}
+
+initializeJarvis();
+
 </script>
+
 </body>
-</html>
+  </html>
