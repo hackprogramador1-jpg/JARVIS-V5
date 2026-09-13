@@ -1,0 +1,27 @@
+{
+  "version": "5.0",
+  "purpose": "Base inicial de categorias para futura RAG.",
+  "categories": [
+    "programação",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Firebase",
+    "Android",
+    "IA",
+    "matemática",
+    "física",
+    "química",
+    "biologia",
+    "história",
+    "geografia",
+    "economia",
+    "negócios",
+    "engenharia",
+    "segurança",
+    "redes",
+    "bancos de dados",
+    "APIs",
+    "sistemas operacionais"
+  ]
+}
