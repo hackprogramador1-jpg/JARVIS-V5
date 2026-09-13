@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>JARVIS V5 — Core Intelligence</title>
+<style>
+:root{--cyan:#00eaff;--cyan2:#63f7ff;--bg:#020609;--panel:rgba(3,14,18,.72);--line:rgba(0,234,255,.2);--muted:#78969b}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020609;color:#dffcff;font-family:Arial,Helvetica,sans-serif}
+body{background:radial-gradient(circle at 50% 48%,#062129 0,#02090c 28%,#020609 65%,#010304 100%)}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+header{position:fixed;top:0;left:0;right:0;height:58px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line);background:rgba(0,5,8,.5);backdrop-filter:blur(10px)}
+.brand{font-weight:800;letter-spacing:4px;font-size:14px}.state{font-size:10px;letter-spacing:2px;color:var(--cyan)}
+main{position:fixed;inset:58px 0 0;z-index:2;display:flex;flex-direction:column;align-items:center}
+#coreWrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-54%);width:min(82vw,520px);height:min(82vw,520px);display:grid;place-items:center}
+.coreGlow{position:absolute;width:65%;height:65%;border-radius:50%;background:radial-gradient(circle,rgba(0,234,255,.2),rgba(0,234,255,.03) 45%,transparent 70%);filter:blur(20px);animation:pulse 2.5s infinite}
+@keyframes pulse{50%{transform:scale(1.12);opacity:.7}}
+.coreRing{position:absolute;width:70%;height:70%;border:1px solid rgba(0,234,255,.18);border-radius:50%;box-shadow:0 0 40px rgba(0,234,255,.08);animation:spin 18s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#brain{position:absolute;width:100%;height:100%}
+.status{position:absolute;top:24px;text-align:center;z-index:4;pointer-events:none}
+.status .title{font-size:11px;letter-spacing:4px;color:var(--cyan);text-shadow:0 0 12px rgba(0,234,255,.6)}
+.status .sub{margin-top:7px;font-size:9px;color:#729095;letter-spacing:1.5px}
+.panel{position:fixed;z-index:10;left:12px;right:12px;bottom:12px;padding:10px;border:1px solid var(--line);border-radius:16px;background:rgba(1,8,11,.84);backdrop-filter:blur(14px)}
+.row{display:flex;gap:8px}.row input{flex:1;min-width:0;background:#061217;border:1px solid var(--line);color:white;border-radius:12px;padding:13px;outline:none}.row button{border:1px solid rgba(0,234,255,.4);background:#06232a;color:var(--cyan2);border-radius:12px;padding:0 15px;font-weight:700}
+.tools{display:flex;gap:7px;margin-top:8px;overflow:auto}.tools button{white-space:nowrap;border:1px solid rgba(0,234,255,.14);background:rgba(0,234,255,.04);color:#8cb5ba;border-radius:999px;padding:7px 10px;font-size:10px}
+#reply{position:fixed;z-index:9;left:12px;right:12px;top:82px;max-height:30vh;overflow:auto;display:none;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(1,9,12,.78);font-size:13px;line-height:1.55;white-space:pre-wrap}
+#memory{position:fixed;z-index:9;top:70px;right:12px;font-size:9px;color:#658186;letter-spacing:1px}
+#listen{position:fixed;z-index:12;top:70px;left:12px;border:1px solid var(--line);background:rgba(0,15,19,.7);color:var(--cyan);border-radius:999px;padding:7px 10px;font-size:9px;letter-spacing:1px}
+@media(min-width:800px){.panel{left:50%;right:auto;transform:translateX(-50%);width:min(720px,calc(100% - 30px))}#reply{left:50%;right:auto;transform:translateX(-50%);width:min(720px,calc(100% - 30px))}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<header><div class="brand">JARVIS</div><div class="state" id="conn">CORE ONLINE</div></header>
+<button id="listen">MIC: INICIANDO</button>
+<div id="memory">MEMÓRIA: 0</div>
+<main>
+  <div class="status"><div class="title" id="state">INICIALIZANDO</div><div class="sub" id="detail">NÚCLEO DE INTELIGÊNCIA</div></div>
+  <div id="coreWrap"><div class="coreGlow"></div><div class="coreRing"></div><canvas id="brain"></canvas></div>
+</main>
+<div id="reply"></div>
+<section class="panel">
+  <div class="row"><input id="input" placeholder="Fale com o JARVIS ou digite..." autocomplete="off"><button id="send">ENVIAR</button></div>
+  <div class="tools">
+    <button data-cmd="que horas são">HORA</button>
+    <button data-cmd="qual é a data de hoje">DATA</button>
+    <button data-cmd="status do sistema">STATUS</button>
+    <button data-cmd="abrir google">GOOGLE</button>
+    <button data-cmd="abrir youtube">YOUTUBE</button>
+    <button id="clearMem">LIMPAR MEMÓRIA</button>
+  </div>
+</section>
+
+<script>
+const $=s=>document.querySelector(s);
+const stateEl=$("#state"),detail=$("#detail"),reply=$("#reply"),input=$("#input"),memEl=$("#memory"),listenEl=$("#listen");
+let memory=JSON.parse(localStorage.getItem("jarvis_memory_v5")||"[]");
+function saveMemory(){localStorage.setItem("jarvis_memory_v5",JSON.stringify(memory));memEl.textContent="MEMÓRIA: "+memory.length}
+saveMemory();
+
+function setState(a,b){stateEl.textContent=a;detail.textContent=b}
+function showReply(t){reply.textContent=t;reply.style.display="block"}
+function speak(t){
+  if(!("speechSynthesis" in window)) return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="pt-BR";u.rate=.98;u.pitch=.95;speechSynthesis.speak(u)}catch(e){}
+}
+async function ask(text){
+  text=(text||"").trim(); if(!text)return;
+  setState("ANALISANDO","PROCESSANDO SOLICITAÇÃO");
+  showReply("JARVIS está analisando...");
+  try{
+    const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text,memory})});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||"Falha no núcleo");
+    const answer=data.answer||"Não consegui produzir uma resposta.";
+    showReply(answer);setState("RESPONDENDO","RESPOSTA GERADA PELO NÚCLEO");
+    speak(answer.replace(/\n/g," "));
+    if(data.memoryToSave){
+      memory.push({text:data.memoryToSave,at:new Date().toISOString(),source:"usuario"});
+      saveMemory();
+    }
+    setTimeout(()=>setState("AGUARDANDO","JARVIS PRONTO"),900);
+  }catch(e){
+    const msg="Não consegui acessar o cérebro remoto. Verifique a API e o servidor. "+e.message;
+    showReply(msg);setState("OFFLINE","NÚCLEO REMOTO INDISPONÍVEL");
+    speak("Não consegui acessar o cérebro remoto.");
+  }
+}
+$("#send").onclick=()=>ask(input.value);
+input.onkeydown=e=>{if(e.key==="Enter")ask(input.value)};
+document.querySelectorAll("[data-cmd]").forEach(b=>b.onclick=()=>ask(b.dataset.cmd));
+$("#clearMem").onclick=()=>{memory=[];saveMemory();showReply("Memória local apagada.");speak("Memória local apagada.")};
+
+function openCommand(t){
+ t=t.toLowerCase();
+ if(t.includes("abrir google")){location.href="https://www.google.com";return true}
+ if(t.includes("abrir youtube")){location.href="https://www.youtube.com";return true}
+ if(t.includes("abrir whatsapp")){location.href="https://web.whatsapp.com";return true}
+ return false;
+}
+
+let recognition=null,listening=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function startVoice(){
+ if(!SR){listenEl.textContent="MIC: NÃO SUPORTADO";return}
+ if(listening)return;
+ recognition=new SR();recognition.lang="pt-BR";recognition.continuous=false;recognition.interimResults=false;
+ recognition.onstart=()=>{listening=true;listenEl.textContent="MIC: OUVINDO";setState("OUVINDO","FALE COM JARVIS")};
+ recognition.onresult=e=>{
+   const text=e.results[0][0].transcript.trim();
+   listening=false;
+   if(openCommand(text))return;
+   ask(text);
+ };
+ recognition.onerror=()=>{listening=false;listenEl.textContent="MIC: AGUARDANDO";setState("AGUARDANDO","DIGA SEU COMANDO")};
+ recognition.onend=()=>{listening=false;listenEl.textContent="MIC: PRONTO"};
+ try{recognition.start()}catch(e){}
+}
+listenEl.onclick=startVoice;
+setTimeout(startVoice,900);
+
+const bg=$("#bg"),bc=bg.getContext("2d"),brain=$("#brain"),ctx=brain.getContext("2d");
+let W,H,pts=[];
+function resize(){
+ W=bg.width=innerWidth*devicePixelRatio;H=bg.height=innerHeight*devicePixelRatio;bg.style.width=innerWidth+"px";bg.style.height=innerHeight+"px";
+ brain.width=brain.clientWidth*devicePixelRatio;brain.height=brain.clientHeight*devicePixelRatio;
+ pts=Array.from({length:70},()=>({x:Math.random(),y:Math.random(),s:Math.random()*1.6+.2,v:(Math.random()-.5)*.0004}));
+}
+addEventListener("resize",resize);resize();
+function draw(){
+ bc.clearRect(0,0,W,H);bc.fillStyle="rgba(0,234,255,.5)";
+ for(const p of pts){p.y+=p.v;if(p.y<0||p.y>1)p.v*=-1;bc.beginPath();bc.arc(p.x*W,p.y*H,p.s*devicePixelRatio,0,Math.PI*2);bc.fill()}
+ const w=brain.width,h=brain.height;ctx.clearRect(0,0,w,h);
+ const t=Date.now()/1000;
+ for(let i=0;i<260;i++){
+   const a=i/260*Math.PI*2; const rr=(.18+.16*Math.sin(i*2.7)+.05*Math.sin(t*1.4+i)) ;
+   const x=w/2+Math.cos(a)*(w*.31+Math.sin(i*4.1+t)*w*.05)+Math.sin(a*3+t)*w*.06;
+   const y=h/2+Math.sin(a)*(h*.31+Math.cos(i*3.2-t)*h*.05)+Math.cos(a*2-t)*h*.08;
+   const z=(Math.sin(i*7+t*2)+1)/2; const r=(.7+z*1.7)*devicePixelRatio;
+   ctx.fillStyle="rgba(0,234,255,"+(0.18+z*.65)+")";ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ }
+ requestAnimationFrame(draw);
+}
+draw();
+setState("AGUARDANDO","NÚCLEO DE INTELIGÊNCIA PRONTO");
+</script>
+</body>
+</html>
